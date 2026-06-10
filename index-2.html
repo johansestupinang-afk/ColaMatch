@@ -192,6 +192,7 @@ export default function ColaMatchApp() {
     return true;
   };
   const logout = () => { safeLS.del("colamatch_session"); setUser(null); setScreen("splash"); };
+  const [adWelcome, setAdWelcome] = useState(true);
   const saveAccount = (prof) => {
     if (!user) return;
     const accounts = safeLS.get("colamatch_accounts") || {};
@@ -250,6 +251,24 @@ export default function ColaMatchApp() {
         </div>
         {chrome && <BottomNav screen={screen} setScreen={setScreen} matchCount={matches.length} retoBadge={doneRetos} />}
         {toast && <div className="cm-pop" style={styles.toast}>{toast}</div>}
+        {adWelcome && (
+          <div style={styles.overlay} onClick={() => setAdWelcome(false)}>
+            <div className="cm-pop" style={{ background: "#fff", borderRadius: 24, width: "84%", maxWidth: 330, overflow: "hidden", position: "relative" }} onClick={(e) => e.stopPropagation()}>
+              <span style={{ position: "absolute", top: 10, left: 12, fontSize: 8.5, fontWeight: 700, color: "rgba(255,255,255,.85)", letterSpacing: 0.5, zIndex: 2 }}>PUBLICIDAD</span>
+              <button onClick={() => setAdWelcome(false)} style={{ position: "absolute", top: 8, right: 8, width: 30, height: 30, borderRadius: "50%", border: "none", background: "rgba(0,0,0,.3)", color: "#fff", cursor: "pointer", zIndex: 2, fontSize: 17, lineHeight: 1 }}>×</button>
+              <div style={{ background: "linear-gradient(135deg,#FFD9A8,#FFC07A)", padding: "30px 20px 24px", textAlign: "center" }}>
+                <div style={{ fontSize: 52 }}>🦴</div>
+                <div style={{ fontFamily: "Fredoka, sans-serif", fontSize: 24, fontWeight: 600, color: "#7a4a12" }}>Dog Chow</div>
+              </div>
+              <div style={{ padding: 18, textAlign: "center" }}>
+                <div style={{ fontWeight: 700, color: C.ink, fontSize: 16 }}>15% de descuento para tu perrhijo</div>
+                <p style={{ color: C.muted, fontSize: 13, marginTop: 6, lineHeight: 1.4 }}>Solo esta semana en alimento premium. Un regalo de nuestros aliados 🐾</p>
+                <button onClick={() => setAdWelcome(false)} style={{ ...styles.cta, marginTop: 14, width: "100%" }}>Ver oferta</button>
+                <button onClick={() => setAdWelcome(false)} style={{ background: "none", border: "none", color: C.faint, fontSize: 12.5, marginTop: 10, cursor: "pointer" }}>Ahora no</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       {matchModal && <MatchModal pet={matchModal} myPhoto={profile.photo} onClose={() => setMatchModal(null)} onMessage={() => { setMatchModal(null); openChat(matchModal.id); }} />}
     </div>
@@ -429,6 +448,7 @@ function ExploreScreen({ onMatch, myPhoto, retosDone, walking, setWalking }) {
           ))}
         </div>
       </div>
+      <AdBanner ad={ADS[0]} />
       <div style={{ position: "relative", flex: 1 }}>
         {done ? <EmptyDeck onReset={() => { setIndex(0); setHistory([]); }} /> :
           PETS.slice(index, index + 3).reverse().map((p, ri, arr) => {
@@ -438,28 +458,41 @@ function ExploreScreen({ onMatch, myPhoto, retosDone, walking, setWalking }) {
                 style={{ ...styles.card, transform: isTop ? tf : `translateY(${depth * 12}px) scale(${1 - depth * 0.05})`, transition: isTop ? tr : "transform .3s ease", opacity: isTop ? op : 1, zIndex: 10 - depth, cursor: isTop ? (drag.active ? "grabbing" : "grab") : "default", touchAction: "none" }}>
                 <PetVisual pet={p} />
                 {isTop && (<><div style={{ ...styles.stamp, ...styles.likeStamp, opacity: likeOp }}>¡COLA!</div><div style={{ ...styles.stamp, ...styles.nopeStamp, opacity: nopeOp }}>PASO</div></>)}
-                <PetInfo pet={p} />
               </div>
             );
           })}
-      </div>
-      {!done && (
-        <>
+        {!done && (
           <div style={styles.actions}>
             <ActionBtn onClick={rewind} disabled={!history.length} ring={C.orange}><RotateCcw size={20} color={C.orange} /></ActionBtn>
             <ActionBtn onClick={() => advance("left")} big ring={C.no}><X size={28} color={C.no} strokeWidth={3} /></ActionBtn>
             <ActionBtn onClick={() => advance(null, true)} ring={C.orange}><Star size={20} color={C.orange} fill={C.orange} /></ActionBtn>
             <ActionBtn onClick={() => advance("right")} big ring={C.purple}><Tail size={30} color={C.purple} /></ActionBtn>
           </div>
-          <div style={{ textAlign: "center", fontSize: 12, color: C.faint, paddingBottom: 6 }}>Menéale la cola 🐾 para conectar</div>
-        </>
-      )}
+        )}
+      </div>
       </>
       )}
     </div>
   );
 }
 
+const ADS = [
+  { emoji: "🦴", title: "Dog Chow · 15% de descuento", subtitle: "Alimento premium para tu perrhijo", cta: "Ver oferta", bg: "#FFF3E6", border: "#F6DCBE" },
+  { emoji: "🛁", title: "Spa Canino Patitas", subtitle: "Baño + corte, cita esta semana", cta: "Reservar", bg: "#EEF4FF", border: "#CFE0F7" },
+];
+function AdBanner({ ad, onClose }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 12, background: ad.bg || "#FFF6EC", border: `1px solid ${ad.border || "#F3DCC0"}`, borderRadius: 16, padding: 10, margin: "0 4px 10px", position: "relative" }}>
+      <span style={{ position: "absolute", top: 5, right: 9, fontSize: 8, fontWeight: 700, color: "#B7A78A", letterSpacing: 0.5 }}>ALIADO</span>
+      <div style={{ width: 46, height: 46, borderRadius: 12, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0, boxShadow: "0 2px 6px rgba(46,42,74,.1)" }}>{ad.emoji}</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontWeight: 700, color: C.ink, fontSize: 13.5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ad.title}</div>
+        <div style={{ fontSize: 12, color: C.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ad.subtitle}</div>
+      </div>
+      <button className="cm-press" style={{ background: GRAD, color: "#fff", fontSize: 12, fontWeight: 700, padding: "7px 12px", borderRadius: 12, flexShrink: 0, border: "none", cursor: "pointer" }}>{ad.cta || "Ver"}</button>
+    </div>
+  );
+}
 function StreetMap() {
   return (
     <svg viewBox="0 0 100 150" preserveAspectRatio="xMidYMid slice" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block" }}>
@@ -683,24 +716,28 @@ function ChatScreen({ match, onBack, onSend }) {
 /* ----------------------------- Perfil ----------------------------- */
 function ProfileScreen({ profile, setProfile, matches, doneRetos, isGold, onGold, onRetos, verified, onVerify, onLogout, onSaveAccount }) {
   const [editing, setEditing] = useState(false);
+  const photoRef = useRef(null);
   const onProfilePhoto = (e) => { const f = e.target.files && e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => setProfile({ ...profile, photo: r.result }); r.readAsDataURL(f); e.target.value = ""; };
+  const pickPhoto = () => { if (photoRef.current) photoRef.current.click(); };
   const toggleEdit = () => { if (editing && onSaveAccount) onSaveAccount(profile); setEditing((e) => !e); };
+  const editInp = { fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, 'Helvetica Neue', Arial, sans-serif", border: "1px solid #E3D8F7", borderRadius: 12, padding: "8px 10px", outline: "none", color: C.ink, background: "#fff", boxSizing: "border-box" };
   return (
     <div style={{ height: "100%", overflowY: "auto", padding: "8px 16px 16px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h2 style={styles.gradText}>Perfil</h2>
-        <button onClick={toggleEdit} className="cm-press" style={{ display: "flex", alignItems: "center", gap: 6, background: "#fff", border: "1px solid #E3D8F7", borderRadius: 20, padding: "8px 14px", cursor: "pointer", color: C.purple, fontWeight: 700, fontSize: 13 }}>
+        <button onClick={toggleEdit} className="cm-press" style={{ display: "flex", alignItems: "center", gap: 6, background: editing ? GRAD : "#fff", border: "1px solid #E3D8F7", borderRadius: 20, padding: "8px 14px", cursor: "pointer", color: editing ? "#fff" : C.purple, fontWeight: 700, fontSize: 13 }}>
           {editing ? <><Check size={15} /> Guardar</> : <><Edit3 size={15} /> Editar</>}
         </button>
       </div>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 8 }}>
+        <input ref={photoRef} type="file" accept="image/*" style={{ display: "none" }} onChange={onProfilePhoto} />
         {editing ? (
-          <label htmlFor="cm-profile-photo" className="cm-press" style={{ position: "relative", cursor: "pointer", display: "inline-block", lineHeight: 0 }}>
+          <div onClick={pickPhoto} className="cm-press" style={{ position: "relative", cursor: "pointer", lineHeight: 0 }}>
             <Avatar photo={profile.photo} size={120} ring />
-            <span style={{ position: "absolute", right: 2, bottom: 2, width: 36, height: 36, borderRadius: "50%", background: GRAD, display: "flex", alignItems: "center", justifyContent: "center", border: "3px solid #fff" }}><Camera size={17} color="#fff" /></span>
-          </label>
+            <span style={{ position: "absolute", right: 2, bottom: 2, width: 38, height: 38, borderRadius: "50%", background: GRAD, display: "flex", alignItems: "center", justifyContent: "center", border: "3px solid #fff" }}><Camera size={18} color="#fff" /></span>
+          </div>
         ) : <Avatar photo={profile.photo} size={120} ring />}
-        <input id="cm-profile-photo" type="file" accept="image/*" style={{ display: "none" }} onChange={onProfilePhoto} />
+        {editing && <button onClick={pickPhoto} style={{ background: "none", border: "none", color: C.purple, fontWeight: 700, fontSize: 12.5, marginTop: 8, cursor: "pointer" }}>Cambiar foto</button>}
         {editing ? (
           <input value={profile.name} onChange={(e) => setProfile({ ...profile, name: e.target.value })} style={{ marginTop: 12, fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, 'Helvetica Neue', Arial, sans-serif", fontSize: 24, fontWeight: 600, color: C.ink, textAlign: "center", border: "1px solid #E3D8F7", borderRadius: 12, padding: "4px 10px", outline: "none" }} />
         ) : (
@@ -711,6 +748,12 @@ function ProfileScreen({ profile, setProfile, matches, doneRetos, isGold, onGold
           </div>
         )}
         <div style={{ fontSize: 13, color: C.faint, display: "flex", alignItems: "center", gap: 5, marginTop: 2 }}><PawPrint size={13} color={C.orange} /> {profile.breed} · perrhijo de {profile.owner}</div>
+        {editing && (
+          <div style={{ display: "flex", gap: 8, marginTop: 10, width: "100%", maxWidth: 300, justifyContent: "center" }}>
+            <input value={profile.breed} onChange={(e) => setProfile({ ...profile, breed: e.target.value })} placeholder="Raza" style={{ ...editInp, flex: 1, fontSize: 13 }} />
+            <input value={profile.age} onChange={(e) => setProfile({ ...profile, age: e.target.value })} placeholder="Edad" style={{ ...editInp, width: 96, fontSize: 13 }} />
+          </div>
+        )}
       </div>
 
       {!verified && (
@@ -1250,14 +1293,26 @@ function MatchModal({ pet, myPhoto, onClose, onMessage }) {
 
 /* ----------------------------- Shared ----------------------------- */
 function PetVisual({ pet }) {
+  const F = "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, 'Helvetica Neue', Arial, sans-serif";
+  const ovChip = { background: "rgba(255,255,255,.22)", border: "1px solid rgba(255,255,255,.4)", color: "#fff", borderRadius: 20, padding: "4px 11px", fontSize: 12, fontWeight: 600 };
+  const ovTag = { background: "rgba(255,255,255,.16)", color: "#fff", borderRadius: 20, padding: "3px 10px", fontSize: 11.5, fontWeight: 600 };
   return (
-    <div style={{ position: "relative", height: "64%", overflow: "hidden", background: "#EDE7F7" }}>
-      <img src={pet.photo} alt={pet.name} draggable={false} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 32%", display: "block", pointerEvents: "none" }} />
-      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 120, background: "linear-gradient(to top, rgba(46,42,74,.7), transparent)" }} />
+    <div style={{ position: "relative", height: "100%", overflow: "hidden", background: "#EDE7F7" }}>
+      <img src={pet.photo} alt={pet.name} draggable={false} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 35%", display: "block", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "65%", background: "linear-gradient(to top, rgba(24,20,40,.94) 6%, rgba(24,20,40,.5) 42%, transparent)", pointerEvents: "none" }} />
       {pet.mood && <div style={{ position: "absolute", right: 12, top: 12, background: "rgba(255,255,255,.94)", borderRadius: 14, padding: "5px 11px", fontSize: 12, fontWeight: 700, color: C.ink, boxShadow: "0 3px 10px rgba(46,42,74,.18)" }}>{pet.mood}</div>}
-      <div style={{ position: "absolute", left: 16, bottom: 12, color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,.45)", display: "flex", alignItems: "center", gap: 7 }}>
-        <span style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, 'Helvetica Neue', Arial, sans-serif", fontSize: 27, fontWeight: 600 }}>{pet.name}</span> <span style={{ fontSize: 16 }}>{pet.age}</span>
-        {pet.verified && <span style={{ display: "inline-flex", alignItems: "center", gap: 3, background: "#3B9EED", borderRadius: 10, padding: "2px 7px", fontSize: 10.5, fontWeight: 700 }}><ShieldCheck size={12} /> Verificado</span>}
+      <div style={{ position: "absolute", left: 16, right: 16, bottom: 0, paddingBottom: 94, color: "#fff", textShadow: "0 2px 10px rgba(0,0,0,.55)", pointerEvents: "none" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <span style={{ fontFamily: F, fontSize: 30, fontWeight: 700 }}>{pet.name}</span>
+          <span style={{ fontSize: 18 }}>{pet.age}</span>
+          {pet.verified && <span style={{ display: "inline-flex", alignItems: "center", gap: 3, background: "#3B9EED", borderRadius: 10, padding: "2px 7px", fontSize: 10.5, fontWeight: 700 }}><ShieldCheck size={12} /> Verificado</span>}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, marginTop: 6, opacity: 0.96 }}><MapPin size={14} /> {pet.breed} · {pet.distance}</div>
+        <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginTop: 9 }}>
+          <span style={ovChip}>🔎 {pet.looking}</span>
+          <span style={ovChip}>⚡ {pet.energy}</span>
+        </div>
+        <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginTop: 8 }}>{pet.tags.map((t) => <span key={t} style={ovTag}>{t}</span>)}</div>
       </div>
     </div>
   );
@@ -1280,7 +1335,7 @@ function Avatar({ photo, size = 64, ring }) {
 }
 function ActionBtn({ children, onClick, big, ring, disabled }) {
   const size = big ? 60 : 48;
-  return <button onClick={onClick} disabled={disabled} className="cm-action" style={{ width: size, height: size, borderRadius: "50%", background: "#fff", border: `2px solid ${ring}`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 18px rgba(46,42,74,.14)", cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.4 : 1, transition: "transform .15s ease" }}>{children}</button>;
+  return <button onClick={onClick} disabled={disabled} className="cm-action" style={{ width: size, height: size, borderRadius: "50%", background: "#fff", border: `2px solid ${ring}`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 20px rgba(0,0,0,.30)", cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.4 : 1, transition: "transform .15s ease" }}>{children}</button>;
 }
 function EmptyDeck({ onReset }) {
   return (
@@ -1312,7 +1367,7 @@ const styles = {
   stamp: { position: "absolute", top: 26, padding: "6px 16px", borderRadius: 12, fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, 'Helvetica Neue', Arial, sans-serif", fontWeight: 600, fontSize: 22, letterSpacing: 1, border: "4px solid", pointerEvents: "none" },
   likeStamp: { left: 20, color: "#7C3AED", borderColor: "#7C3AED", transform: "rotate(-16deg)", background: "rgba(255,255,255,.85)" },
   nopeStamp: { right: 20, color: "#F2545B", borderColor: "#F2545B", transform: "rotate(16deg)", background: "rgba(255,255,255,.85)" },
-  actions: { display: "flex", alignItems: "center", justifyContent: "center", gap: 14, padding: "12px 0 8px" },
+  actions: { position: "absolute", left: 0, right: 0, bottom: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 14, zIndex: 60 },
   nav: { display: "flex", alignItems: "center", borderTop: "1px solid #EEE6FB", background: "rgba(255,255,255,.92)", padding: "8px 4px 10px" },
   chatHeader: { display: "flex", alignItems: "center", gap: 10, padding: "12px 12px", borderBottom: "1px solid #EEE6FB", background: "rgba(255,255,255,.7)" },
   sectionLabel: { fontSize: 12, fontWeight: 700, color: "#A39FB5", textTransform: "uppercase", letterSpacing: 1, margin: "16px 0 8px" },
