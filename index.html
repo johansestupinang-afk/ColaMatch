@@ -192,6 +192,16 @@ export default function ColaMatchApp() {
     return true;
   };
   const logout = () => { safeLS.del("colamatch_session"); setUser(null); setScreen("splash"); };
+  const [adWelcome, setAdWelcome] = useState(true);
+  const saveAccount = (prof) => {
+    if (!user) return;
+    const accounts = safeLS.get("colamatch_accounts") || {};
+    if (accounts[user.email]) {
+      accounts[user.email] = { ...accounts[user.email], petName: prof.name, ownerName: prof.owner, photo: prof.photo, breed: prof.breed, bio: prof.bio, tags: prof.tags };
+      safeLS.set("colamatch_accounts", accounts);
+      setUser(accounts[user.email]);
+    }
+  };
 
   const addMatch = (pet) => {
     setMatches((m) => m.some((x) => x.pet.id === pet.id) ? m
@@ -231,7 +241,7 @@ export default function ColaMatchApp() {
           {screen === "retos" && <RetosScreen challenges={challenges} onToggle={toggleChallenge} onAttach={attachPhoto} petName={profile.name} myPhoto={profile.photo} />}
           {screen === "mensajes" && <MessagesScreen matches={matches} onOpen={openChat} onExplore={() => setScreen("explorar")} />}
           {screen === "chat" && <ChatScreen match={matches.find((m) => m.id === activeChat)} onBack={() => setScreen("mensajes")} onSend={sendMessage} />}
-          {screen === "perfil" && <ProfileScreen profile={profile} setProfile={setProfile} matches={matches} doneRetos={doneRetos} isGold={isGold} onGold={() => setScreen("gold")} onRetos={() => setScreen("retos")} verified={verified} onVerify={() => setScreen("verify")} onLogout={logout} />}
+          {screen === "perfil" && <ProfileScreen profile={profile} setProfile={setProfile} matches={matches} doneRetos={doneRetos} isGold={isGold} onGold={() => setScreen("gold")} onRetos={() => setScreen("retos")} verified={verified} onVerify={() => setScreen("verify")} onLogout={logout} onSaveAccount={saveAccount} />}
           {screen === "adopta" && <AdoptaScreen />}
           {screen === "verify" && <VerificationScreen profile={profile} onBack={() => setScreen("perfil")} onDone={() => { setVerified(true); setScreen("perfil"); showToast("✓ ¡Perfil verificado!"); }} />}
           {screen === "notis" && <NotificationsScreen onBack={() => setScreen(prevScreen)} />}
@@ -241,6 +251,24 @@ export default function ColaMatchApp() {
         </div>
         {chrome && <BottomNav screen={screen} setScreen={setScreen} matchCount={matches.length} retoBadge={doneRetos} />}
         {toast && <div className="cm-pop" style={styles.toast}>{toast}</div>}
+        {adWelcome && (
+          <div style={styles.overlay} onClick={() => setAdWelcome(false)}>
+            <div className="cm-pop" style={{ background: "#fff", borderRadius: 24, width: "84%", maxWidth: 330, overflow: "hidden", position: "relative" }} onClick={(e) => e.stopPropagation()}>
+              <span style={{ position: "absolute", top: 10, left: 12, fontSize: 8.5, fontWeight: 700, color: "rgba(255,255,255,.85)", letterSpacing: 0.5, zIndex: 2 }}>PUBLICIDAD</span>
+              <button onClick={() => setAdWelcome(false)} style={{ position: "absolute", top: 8, right: 8, width: 30, height: 30, borderRadius: "50%", border: "none", background: "rgba(0,0,0,.3)", color: "#fff", cursor: "pointer", zIndex: 2, fontSize: 17, lineHeight: 1 }}>×</button>
+              <div style={{ background: "linear-gradient(135deg,#FFD9A8,#FFC07A)", padding: "30px 20px 24px", textAlign: "center" }}>
+                <div style={{ fontSize: 52 }}>🦴</div>
+                <div style={{ fontFamily: "Fredoka, sans-serif", fontSize: 24, fontWeight: 600, color: "#7a4a12" }}>Dog Chow</div>
+              </div>
+              <div style={{ padding: 18, textAlign: "center" }}>
+                <div style={{ fontWeight: 700, color: C.ink, fontSize: 16 }}>15% de descuento para tu perrhijo</div>
+                <p style={{ color: C.muted, fontSize: 13, marginTop: 6, lineHeight: 1.4 }}>Solo esta semana en alimento premium. Un regalo de nuestros aliados 🐾</p>
+                <button onClick={() => setAdWelcome(false)} style={{ ...styles.cta, marginTop: 14, width: "100%" }}>Ver oferta</button>
+                <button onClick={() => setAdWelcome(false)} style={{ background: "none", border: "none", color: C.faint, fontSize: 12.5, marginTop: 10, cursor: "pointer" }}>Ahora no</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       {matchModal && <MatchModal pet={matchModal} myPhoto={profile.photo} onClose={() => setMatchModal(null)} onMessage={() => { setMatchModal(null); openChat(matchModal.id); }} />}
     </div>
@@ -420,6 +448,7 @@ function ExploreScreen({ onMatch, myPhoto, retosDone, walking, setWalking }) {
           ))}
         </div>
       </div>
+      <AdBanner ad={ADS[0]} />
       <div style={{ position: "relative", flex: 1 }}>
         {done ? <EmptyDeck onReset={() => { setIndex(0); setHistory([]); }} /> :
           PETS.slice(index, index + 3).reverse().map((p, ri, arr) => {
@@ -451,6 +480,52 @@ function ExploreScreen({ onMatch, myPhoto, retosDone, walking, setWalking }) {
   );
 }
 
+const ADS = [
+  { emoji: "🦴", title: "Dog Chow · 15% de descuento", subtitle: "Alimento premium para tu perrhijo", cta: "Ver oferta", bg: "#FFF3E6", border: "#F6DCBE" },
+  { emoji: "🛁", title: "Spa Canino Patitas", subtitle: "Baño + corte, cita esta semana", cta: "Reservar", bg: "#EEF4FF", border: "#CFE0F7" },
+];
+function AdBanner({ ad, onClose }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 12, background: ad.bg || "#FFF6EC", border: `1px solid ${ad.border || "#F3DCC0"}`, borderRadius: 16, padding: 10, margin: "0 4px 10px", position: "relative" }}>
+      <span style={{ position: "absolute", top: 5, right: 9, fontSize: 8, fontWeight: 700, color: "#B7A78A", letterSpacing: 0.5 }}>ALIADO</span>
+      <div style={{ width: 46, height: 46, borderRadius: 12, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0, boxShadow: "0 2px 6px rgba(46,42,74,.1)" }}>{ad.emoji}</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontWeight: 700, color: C.ink, fontSize: 13.5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ad.title}</div>
+        <div style={{ fontSize: 12, color: C.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ad.subtitle}</div>
+      </div>
+      <button className="cm-press" style={{ background: GRAD, color: "#fff", fontSize: 12, fontWeight: 700, padding: "7px 12px", borderRadius: 12, flexShrink: 0, border: "none", cursor: "pointer" }}>{ad.cta || "Ver"}</button>
+    </div>
+  );
+}
+function StreetMap() {
+  return (
+    <svg viewBox="0 0 100 150" preserveAspectRatio="xMidYMid slice" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block" }}>
+      <rect width="100" height="150" fill="#E7ECF1" />
+      <path d="M68 0 Q94 10 90 34 Q86 52 100 60 L100 0 Z" fill="#C3DAEE" />
+      <rect x="6" y="14" width="34" height="26" rx="5" fill="#C9E7C4" />
+      <rect x="58" y="92" width="36" height="40" rx="6" fill="#C9E7C4" />
+      <g stroke="#FBFCFE" strokeWidth="7" fill="none" strokeLinecap="round">
+        <line x1="0" y1="54" x2="100" y2="54" />
+        <line x1="0" y1="104" x2="100" y2="104" />
+        <line x1="26" y1="0" x2="26" y2="150" />
+        <line x1="64" y1="0" x2="64" y2="150" />
+        <line x1="-5" y1="130" x2="105" y2="74" />
+      </g>
+      <g stroke="#F3CE83" strokeWidth="1.3" fill="none" strokeDasharray="3 3" strokeLinecap="round" opacity="0.85">
+        <line x1="0" y1="54" x2="100" y2="54" />
+        <line x1="26" y1="0" x2="26" y2="150" />
+        <line x1="64" y1="0" x2="64" y2="150" />
+      </g>
+      <g fill="#DCE3EB">
+        <rect x="2" y="58" width="20" height="42" rx="2" />
+        <rect x="30" y="58" width="30" height="42" rx="2" />
+        <rect x="68" y="58" width="30" height="30" rx="2" />
+        <rect x="2" y="108" width="20" height="38" rx="2" />
+        <rect x="30" y="108" width="30" height="38" rx="2" />
+      </g>
+    </svg>
+  );
+}
 function BarrioMap({ pets, myPhoto, onMatch, coolLevel = 0, walking, setWalking }) {
   const [sel, setSel] = useState(null);
   const walkingCount = pets.filter((p) => p.walkingNow).length;
@@ -462,7 +537,7 @@ function BarrioMap({ pets, myPhoto, onMatch, coolLevel = 0, walking, setWalking 
   const selected = pins.map((p) => p.pet).find((p) => p.id === sel);
   return (
     <div style={{ position: "relative", flex: 1, margin: "0 8px 8px", borderRadius: 24, overflow: "hidden", border: `1px solid ${C.line}` }}>
-      <img src={MAPBG} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+      <StreetMap />
       <div style={{ position: "absolute", inset: 0, background: "rgba(46,42,74,.10)" }} />
       <div style={{ position: "absolute", top: 10, left: 12, background: "rgba(255,255,255,.9)", borderRadius: 12, padding: "6px 12px", fontSize: 12, fontWeight: 700, color: C.purple, boxShadow: "0 3px 10px rgba(46,42,74,.12)" }}>🐾 Perrhijos en tu barrio</div>
       <button onClick={() => setWalking(!walking)} className="cm-press" style={{ position: "absolute", top: 10, right: 12, border: "none", cursor: "pointer", borderRadius: 14, padding: "8px 13px", fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, 'Helvetica Neue', Arial, sans-serif", fontWeight: 600, fontSize: 12.5, display: "flex", alignItems: "center", gap: 6, background: walking ? "#1FA971" : GRAD, color: "#fff", boxShadow: "0 5px 14px rgba(46,42,74,.25)" }}>
@@ -643,18 +718,30 @@ function ChatScreen({ match, onBack, onSend }) {
 }
 
 /* ----------------------------- Perfil ----------------------------- */
-function ProfileScreen({ profile, setProfile, matches, doneRetos, isGold, onGold, onRetos, verified, onVerify, onLogout }) {
+function ProfileScreen({ profile, setProfile, matches, doneRetos, isGold, onGold, onRetos, verified, onVerify, onLogout, onSaveAccount }) {
   const [editing, setEditing] = useState(false);
+  const photoRef = useRef(null);
+  const onProfilePhoto = (e) => { const f = e.target.files && e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => setProfile({ ...profile, photo: r.result }); r.readAsDataURL(f); e.target.value = ""; };
+  const pickPhoto = () => { if (photoRef.current) photoRef.current.click(); };
+  const toggleEdit = () => { if (editing && onSaveAccount) onSaveAccount(profile); setEditing((e) => !e); };
+  const editInp = { fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, 'Helvetica Neue', Arial, sans-serif", border: "1px solid #E3D8F7", borderRadius: 12, padding: "8px 10px", outline: "none", color: C.ink, background: "#fff", boxSizing: "border-box" };
   return (
     <div style={{ height: "100%", overflowY: "auto", padding: "8px 16px 16px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h2 style={styles.gradText}>Perfil</h2>
-        <button onClick={() => setEditing((e) => !e)} className="cm-press" style={{ display: "flex", alignItems: "center", gap: 6, background: "#fff", border: "1px solid #E3D8F7", borderRadius: 20, padding: "8px 14px", cursor: "pointer", color: C.purple, fontWeight: 700, fontSize: 13 }}>
+        <button onClick={toggleEdit} className="cm-press" style={{ display: "flex", alignItems: "center", gap: 6, background: editing ? GRAD : "#fff", border: "1px solid #E3D8F7", borderRadius: 20, padding: "8px 14px", cursor: "pointer", color: editing ? "#fff" : C.purple, fontWeight: 700, fontSize: 13 }}>
           {editing ? <><Check size={15} /> Guardar</> : <><Edit3 size={15} /> Editar</>}
         </button>
       </div>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 8 }}>
-        <Avatar photo={profile.photo} size={120} ring />
+        <input ref={photoRef} type="file" accept="image/*" style={{ display: "none" }} onChange={onProfilePhoto} />
+        {editing ? (
+          <div onClick={pickPhoto} className="cm-press" style={{ position: "relative", cursor: "pointer", lineHeight: 0 }}>
+            <Avatar photo={profile.photo} size={120} ring />
+            <span style={{ position: "absolute", right: 2, bottom: 2, width: 38, height: 38, borderRadius: "50%", background: GRAD, display: "flex", alignItems: "center", justifyContent: "center", border: "3px solid #fff" }}><Camera size={18} color="#fff" /></span>
+          </div>
+        ) : <Avatar photo={profile.photo} size={120} ring />}
+        {editing && <button onClick={pickPhoto} style={{ background: "none", border: "none", color: C.purple, fontWeight: 700, fontSize: 12.5, marginTop: 8, cursor: "pointer" }}>Cambiar foto</button>}
         {editing ? (
           <input value={profile.name} onChange={(e) => setProfile({ ...profile, name: e.target.value })} style={{ marginTop: 12, fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, 'Helvetica Neue', Arial, sans-serif", fontSize: 24, fontWeight: 600, color: C.ink, textAlign: "center", border: "1px solid #E3D8F7", borderRadius: 12, padding: "4px 10px", outline: "none" }} />
         ) : (
@@ -665,6 +752,12 @@ function ProfileScreen({ profile, setProfile, matches, doneRetos, isGold, onGold
           </div>
         )}
         <div style={{ fontSize: 13, color: C.faint, display: "flex", alignItems: "center", gap: 5, marginTop: 2 }}><PawPrint size={13} color={C.orange} /> {profile.breed} · perrhijo de {profile.owner}</div>
+        {editing && (
+          <div style={{ display: "flex", gap: 8, marginTop: 10, width: "100%", maxWidth: 300, justifyContent: "center" }}>
+            <input value={profile.breed} onChange={(e) => setProfile({ ...profile, breed: e.target.value })} placeholder="Raza" style={{ ...editInp, flex: 1, fontSize: 13 }} />
+            <input value={profile.age} onChange={(e) => setProfile({ ...profile, age: e.target.value })} placeholder="Edad" style={{ ...editInp, width: 96, fontSize: 13 }} />
+          </div>
+        )}
       </div>
 
       {!verified && (
@@ -894,7 +987,7 @@ function PetFriendlyMap({ onBack }) {
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <SubHeader title="Sitios pet-friendly" onBack={onBack} />
       <div style={{ position: "relative", flex: 1, margin: "12px", borderRadius: 20, overflow: "hidden", border: `1px solid ${C.line}` }}>
-        <img src={MAPBG} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+        <StreetMap />
         <div style={{ position: "absolute", inset: 0, background: "rgba(46,42,74,.12)" }} />
         <div style={{ position: "absolute", top: 10, left: 12, background: "rgba(255,255,255,.92)", borderRadius: 12, padding: "6px 12px", fontSize: 12, fontWeight: 700, color: C.purple }}>🐾 Cerca de ti, aceptan perros</div>
         {places.map((p) => (
