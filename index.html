@@ -2,15 +2,25 @@
 <html lang="es">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
 <title>ColaMatch</title>
-<link rel="icon" href="data:," />
+
+<link rel="manifest" href="./manifest.json" />
+<meta name="theme-color" content="#FCF8FF" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="ColaMatch" />
+<link rel="apple-touch-icon" href="./icon-180.png" />
+<link rel="icon" type="image/png" href="./icon-192.png" />
+
 <style>
-  html, body { height: 100%; margin: 0; background: #EFE7FB; }
+  html, body { height: 100%; margin: 0; background: #EFE0FC; overscroll-behavior: none; }
   #root { height: 100%; }
   .cm-loading { height:100%; display:flex; align-items:center; justify-content:center;
-    font-family:-apple-system,BlinkMacFont,system-ui,sans-serif; color:#7C3AED; font-weight:700; }
+    font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif; color:#7C3AED; font-weight:700; }
 </style>
+
 <script type="importmap">
 {
   "imports": {
@@ -25,7 +35,16 @@
 <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
 </head>
 <body>
-<div id="root"><div class="cm-loading">Cargando ColaMatch… 🐾</div></div>
+<div id="root"><div class="cm-loading">Cargando ColaMatch... 🐾</div></div>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("./sw.js").catch(function () {});
+  });
+}
+</script>
+
 <script type="text/babel" data-type="module" data-presets="react">
 import React, { useState, useRef } from "react";
 import {
@@ -170,7 +189,6 @@ export default function ColaMatchApp() {
         ))}
       </div>
       <div style={styles.phone}>
-        <StatusBar />
         {chrome && <TopBar isGold={isGold} onGold={() => setScreen("gold")} onNotis={openNotis} notisCount={notisCount} />}
         <div style={{ position: "relative", flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
           {screen === "explorar" && <ExploreScreen onMatch={addMatch} myPhoto={profile.photo} retosDone={doneRetos} walking={walking} setWalking={setWalking} />}
@@ -186,7 +204,6 @@ export default function ColaMatchApp() {
             : <PlatinumSales onSubscribe={() => setIsGold(true)} onBack={() => setScreen("perfil")} />)}
         </div>
         {chrome && <BottomNav screen={screen} setScreen={setScreen} matchCount={matches.length} retoBadge={doneRetos} />}
-        <HomeIndicator />
         {toast && <div className="cm-pop" style={styles.toast}>{toast}</div>}
       </div>
       {matchModal && <MatchModal pet={matchModal} myPhoto={profile.photo} onClose={() => setMatchModal(null)} onMessage={() => { setMatchModal(null); openChat(matchModal.id); }} />}
@@ -222,14 +239,12 @@ function Splash({ onEnter }) {
   return (
     <div style={{ ...styles.root, background: "linear-gradient(165deg,#F3E6FF,#EBD9FB 50%,#FFD9B8)" }}>
       <style>{CSS}</style>
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0 }}><StatusBar /></div>
       <div className="cm-pop" style={{ textAlign: "center", padding: 30 }}>
         <img src={MARK} alt="ColaMatch" className="cm-bobY" style={{ width: 132, display: "block", margin: "0 auto -2px" }} />
         <h1 style={{ ...styles.gradText, fontFamily: "Fredoka, sans-serif", fontSize: 46, margin: "0 0 2px", letterSpacing: -0.5 }}>ColaMatch</h1>
         <p style={{ color: C.muted, fontSize: 15, marginBottom: 30 }}>Amigos de verdad para tu perrhijo 🐾</p>
         <button onClick={onEnter} className="cm-press" style={{ ...styles.cta, width: 220, margin: "0 auto" }}><PawPrint size={18} /> Entrar</button>
       </div>
-      <div style={{ position: "absolute", bottom: 4, left: 0, right: 0 }}><HomeIndicator /></div>
     </div>
   );
 }
@@ -1135,9 +1150,9 @@ const BLOBS = [
 ];
 
 const styles = {
-  root: { minHeight: "100vh", width: "100%", position: "relative", overflow: "hidden", background: "linear-gradient(160deg,#EFE0FC 0%,#F8EEFF 50%,#FCE0C8 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, 'Helvetica Neue', Arial, sans-serif", padding: 16 },
+  root: { minHeight: "100dvh", height: "100dvh", width: "100%", position: "relative", overflow: "hidden", background: "linear-gradient(160deg,#EFE0FC 0%,#F8EEFF 50%,#FCE0C8 100%)", display: "flex", alignItems: "stretch", justifyContent: "center", fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, 'Helvetica Neue', Arial, sans-serif" },
   bgWrap: { position: "absolute", inset: 0, pointerEvents: "none" },
-  phone: { position: "relative", width: "100%", maxWidth: 390, height: 740, maxHeight: "94vh", background: "linear-gradient(180deg,#FCF8FF,#FFF6EE)", borderRadius: 46, display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 30px 60px rgba(46,42,74,.24)", border: "1px solid rgba(255,255,255,.8)" },
+  phone: { position: "relative", width: "100%", maxWidth: 480, height: "100dvh", background: "linear-gradient(180deg,#FCF8FF,#FFF6EE)", borderRadius: 0, display: "flex", flexDirection: "column", overflow: "hidden", paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)", boxShadow: "0 0 50px rgba(46,42,74,.12)" },
   topbar: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 16px 8px", borderBottom: "1px solid rgba(124,58,237,.07)" },
   logo: { display: "flex", alignItems: "center", gap: 10 },
   logoBubble: { width: 42, height: 42, background: "#fff", borderRadius: 13, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(124,58,237,.18)" },
