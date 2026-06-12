@@ -432,45 +432,46 @@ function ExploreScreen({ onMatch, myPhoto, retosDone, walking, setWalking }) {
         <SegBtn active={view === "cards"} onClick={() => setView("cards")} icon={Layers} label="Tarjetas" />
         <SegBtn active={view === "mapa"} onClick={() => setView("mapa")} icon={MapPin} label="Mapa del barrio" />
       </div>
-      {view === "mapa" ? <BarrioMap pets={PETS} myPhoto={myPhoto} onMatch={onMatch} coolLevel={retosDone} walking={walking} setWalking={setWalking} /> : (
-      <>
-      <div style={{ padding: "0 4px 4px" }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: C.orangeDeep, margin: "0 4px 6px", display: "flex", alignItems: "center", gap: 5 }}>🔥 Populares esta semana</div>
-        <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 2 }}>
-          {populares.map((p, i) => (
-            <button key={p.id} onClick={() => jumpTo(p)} className="cm-press" style={{ background: "none", border: "none", cursor: "pointer", textAlign: "center", flexShrink: 0 }}>
-              <div style={{ position: "relative", display: "inline-flex" }}>
-                <Avatar photo={p.photo} size={52} ring />
-                {i === 0 && <span style={{ position: "absolute", top: -8, right: -6, fontSize: 16 }}>👑</span>}
-              </div>
-              <div style={{ fontSize: 11, color: C.ink, marginTop: 3, fontWeight: 600 }}>{p.name}</div>
-            </button>
-          ))}
-        </div>
-      </div>
-      <AdBanner ad={ADS[0]} />
-      <div style={{ position: "relative", flex: 1 }}>
-        {done ? <EmptyDeck onReset={() => { setIndex(0); setHistory([]); }} /> :
-          PETS.slice(index, index + 3).reverse().map((p, ri, arr) => {
-            const depth = arr.length - 1 - ri, isTop = depth === 0;
-            return (
-              <div key={p.id} onPointerDown={isTop ? onDown : undefined} onPointerMove={isTop ? onMove : undefined} onPointerUp={isTop ? onUp : undefined} onPointerCancel={isTop ? onUp : undefined}
-                style={{ ...styles.card, transform: isTop ? tf : `translateY(${depth * 12}px) scale(${1 - depth * 0.05})`, transition: isTop ? tr : "transform .3s ease", opacity: isTop ? op : 1, zIndex: 10 - depth, cursor: isTop ? (drag.active ? "grabbing" : "grab") : "default", touchAction: "none" }}>
-                <PetVisual pet={p} />
-                {isTop && (<><div style={{ ...styles.stamp, ...styles.likeStamp, opacity: likeOp }}>¡COLA!</div><div style={{ ...styles.stamp, ...styles.nopeStamp, opacity: nopeOp }}>PASO</div></>)}
-              </div>
-            );
-          })}
-        {!done && (
-          <div style={styles.actions}>
-            <ActionBtn onClick={rewind} disabled={!history.length} ring={C.orange}><RotateCcw size={20} color={C.orange} /></ActionBtn>
-            <ActionBtn onClick={() => advance("left")} big ring={C.no}><X size={28} color={C.no} strokeWidth={3} /></ActionBtn>
-            <ActionBtn onClick={() => advance(null, true)} ring={C.orange}><Star size={20} color={C.orange} fill={C.orange} /></ActionBtn>
-            <ActionBtn onClick={() => advance("right")} big ring={C.purple}><Tail size={30} color={C.purple} /></ActionBtn>
+      {view === "mapa" ? (
+        <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+          <div style={{ padding: "0 4px 4px" }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: C.orangeDeep, margin: "0 4px 6px", display: "flex", alignItems: "center", gap: 5 }}>🔥 Populares esta semana</div>
+            <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 2 }}>
+              {populares.map((p, i) => (
+                <button key={p.id} onClick={() => jumpTo(p)} className="cm-press" style={{ background: "none", border: "none", cursor: "pointer", textAlign: "center", flexShrink: 0 }}>
+                  <div style={{ position: "relative", display: "inline-flex" }}>
+                    <Avatar photo={p.photo} size={52} ring />
+                    {i === 0 && <span style={{ position: "absolute", top: -8, right: -6, fontSize: 16 }}>👑</span>}
+                  </div>
+                  <div style={{ fontSize: 11, color: C.ink, marginTop: 3, fontWeight: 600 }}>{p.name}</div>
+                </button>
+              ))}
+            </div>
           </div>
-        )}
-      </div>
-      </>
+          <BarrioMap pets={PETS} myPhoto={myPhoto} onMatch={onMatch} coolLevel={retosDone} walking={walking} setWalking={setWalking} />
+        </div>
+      ) : (
+        <div style={{ position: "relative", flex: 1 }}>
+          {done ? <EmptyDeck onReset={() => { setIndex(0); setHistory([]); }} /> :
+            PETS.slice(index, index + 3).reverse().map((p, ri, arr) => {
+              const depth = arr.length - 1 - ri, isTop = depth === 0;
+              return (
+                <div key={p.id} onPointerDown={isTop ? onDown : undefined} onPointerMove={isTop ? onMove : undefined} onPointerUp={isTop ? onUp : undefined} onPointerCancel={isTop ? onUp : undefined}
+                  style={{ ...styles.card, transform: isTop ? tf : `translateY(${depth * 12}px) scale(${1 - depth * 0.05})`, transition: isTop ? tr : "transform .3s ease", opacity: isTop ? op : 1, zIndex: 10 - depth, cursor: isTop ? (drag.active ? "grabbing" : "grab") : "default", touchAction: "none" }}>
+                  <PetVisual pet={p} />
+                  {isTop && (<><div style={{ ...styles.stamp, ...styles.likeStamp, opacity: likeOp }}>¡COLA!</div><div style={{ ...styles.stamp, ...styles.nopeStamp, opacity: nopeOp }}>PASO</div></>)}
+                </div>
+              );
+            })}
+          {!done && (
+            <div style={styles.actions}>
+              <ActionBtn onClick={rewind} disabled={!history.length} ring={C.orange}><RotateCcw size={20} color={C.orange} /></ActionBtn>
+              <ActionBtn onClick={() => advance("left")} big ring={C.no}><X size={28} color={C.no} strokeWidth={3} /></ActionBtn>
+              <ActionBtn onClick={() => advance(null, true)} ring={C.orange}><Star size={20} color={C.orange} fill={C.orange} /></ActionBtn>
+              <ActionBtn onClick={() => advance("right")} big ring={C.purple}><Tail size={30} color={C.purple} /></ActionBtn>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
@@ -599,7 +600,7 @@ function RetosScreen({ challenges, onToggle, onAttach, petName, myPhoto }) {
       <h2 style={styles.gradText}>Plus</h2>
       <div style={{ display: "flex", gap: 6, background: "#F1EAFE", borderRadius: 14, padding: 4, margin: "8px 0 14px" }}>
         <SegBtn active={tab === "retos"} onClick={() => setTab("retos")} icon={Trophy} label="Retos" />
-        <SegBtn active={tab === "aliados"} onClick={() => setTab("aliados")} icon={Store} label="Aliados" />
+        <SegBtn active={tab === "aliados"} onClick={() => setTab("aliados")} icon={Store} label="Descuentos" />
       </div>
 
       {tab === "retos" && (
@@ -638,6 +639,8 @@ function RetosScreen({ challenges, onToggle, onAttach, petName, myPhoto }) {
       {tab === "aliados" && (
         <>
           <p style={{ fontSize: 13.5, color: C.muted, marginBottom: 14, lineHeight: 1.45 }}>Compra en los aliados de ColaMatch 🛍️ Con <b style={{ color: C.purple }}>Platinum</b> tienes descuentos aún mayores.</p>
+          <AdBanner ad={ADS[0]} />
+          <AdBanner ad={ADS[1]} />
           {ALIADOS.map((a) => (
             <div key={a.name} style={{ display: "flex", alignItems: "center", gap: 13, padding: 12, marginBottom: 10, borderRadius: 18, background: "#fff", border: `1px solid ${C.line}` }}>
               <div style={{ width: 48, height: 48, borderRadius: 14, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, background: a.bg }}>{a.emoji}</div>
@@ -978,19 +981,46 @@ function PetFriendlyMap({ onBack }) {
     { id: 3, emoji: "🍽️", name: "Resto El Hueso", type: "Terraza para perros", offer: "Postre canino gratis", top: "58%", left: "38%" },
     { id: 4, emoji: "🛍️", name: "Pet Shop Huellitas", type: "Tienda aliada", offer: "-20% Platinum", top: "64%", left: "70%" },
   ];
+  const destacados = [
+    { id: 1, emoji: "☕", name: "Café Patitas", note: "-15% Platinum" },
+    { id: 4, emoji: "🛍️", name: "Pet Shop Huellitas", note: "-20% Platinum" },
+  ];
   const s = places.find((p) => p.id === sel);
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <SubHeader title="Sitios pet-friendly" onBack={onBack} />
-      <div style={{ position: "relative", flex: 1, margin: "12px", borderRadius: 20, overflow: "hidden", border: `1px solid ${C.line}` }}>
+      <div style={{ padding: "0 14px 10px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 2px 8px" }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: C.orangeDeep, display: "flex", alignItems: "center", gap: 5 }}>🏆 Destacados del mes</div>
+          <span style={{ fontSize: 9.5, fontWeight: 700, color: "#B7A78A", letterSpacing: 0.5 }}>PATROCINADO</span>
+        </div>
+        <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 2 }}>
+          {destacados.map((d) => (
+            <button key={d.id} onClick={() => setSel(d.id)} className="cm-press" style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 9, background: "linear-gradient(135deg,#FFF3E2,#FFE7D2)", border: "1px solid #F6DCBE", borderRadius: 16, padding: "8px 14px", cursor: "pointer" }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>{d.emoji}</div>
+              <div style={{ textAlign: "left" }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>{d.name}</div>
+                <div style={{ fontSize: 11, color: C.orangeDeep, fontWeight: 600 }}>{d.note}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+      <div style={{ position: "relative", flex: 1, margin: "0 12px 12px", borderRadius: 20, overflow: "hidden", border: `1px solid ${C.line}` }}>
         <StreetMap />
         <div style={{ position: "absolute", inset: 0, background: "rgba(46,42,74,.12)" }} />
         <div style={{ position: "absolute", top: 10, left: 12, background: "rgba(255,255,255,.92)", borderRadius: 12, padding: "6px 12px", fontSize: 12, fontWeight: 700, color: C.purple }}>🐾 Cerca de ti, aceptan perros</div>
-        {places.map((p) => (
-          <button key={p.id} onClick={() => setSel(p.id)} className="cm-press" style={{ position: "absolute", top: p.top, left: p.left, transform: "translate(-50%,-100%)", border: "none", background: "none", cursor: "pointer", padding: 0 }}>
-            <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, boxShadow: "0 5px 12px rgba(46,42,74,.3)", border: `2px solid ${sel === p.id ? C.orange : C.purple}` }}>{p.emoji}</div>
-          </button>
-        ))}
+        {places.map((p) => {
+          const isFeatured = destacados.some((d) => d.id === p.id);
+          return (
+            <button key={p.id} onClick={() => setSel(p.id)} className="cm-press" style={{ position: "absolute", top: p.top, left: p.left, transform: "translate(-50%,-100%)", border: "none", background: "none", cursor: "pointer", padding: 0 }}>
+              <div style={{ position: "relative" }}>
+                <div style={{ width: isFeatured ? 46 : 40, height: isFeatured ? 46 : 40, borderRadius: "50%", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: isFeatured ? 22 : 20, boxShadow: isFeatured ? "0 0 0 4px rgba(245,134,52,.28), 0 6px 14px rgba(46,42,74,.3)" : "0 5px 12px rgba(46,42,74,.3)", border: `2px solid ${isFeatured ? C.orange : (sel === p.id ? C.orange : C.purple)}` }}>{p.emoji}</div>
+                {isFeatured && <span style={{ position: "absolute", top: -8, right: -8, fontSize: 15 }}>🏆</span>}
+              </div>
+            </button>
+          );
+        })}
         {s && (
           <div className="cm-pop" style={{ position: "absolute", left: 12, right: 12, bottom: 12, background: "#fff", borderRadius: 16, padding: 12, boxShadow: "0 12px 30px rgba(46,42,74,.28)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -1248,9 +1278,9 @@ function PlanCard({ active, onClick, title, price, per, badge }) {
 /* ----------------------------- Bottom nav ----------------------------- */
 function BottomNav({ screen, setScreen, matchCount, retoBadge }) {
   const tabs = [
-    { id: "explorar", icon: PawPrint, label: "Explorar" },
-    { id: "retos", icon: Trophy, label: "Plus", badge: retoBadge },
     { id: "adopta", icon: Heart, label: "Adopta" },
+    { id: "retos", icon: Trophy, label: "Plus", badge: retoBadge },
+    { id: "explorar", icon: PawPrint, label: "Explorar" },
     { id: "mensajes", icon: MessageCircle, label: "Mensajes", badge: matchCount },
     { id: "perfil", icon: User, label: "Perfil" },
   ];
