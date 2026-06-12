@@ -2,7 +2,10 @@
 <html lang="es">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
 <title>ColaMatch</title>
 
 <link rel="manifest" href="./manifest.json" />
@@ -308,6 +311,7 @@ function Splash({ onEnter }) {
         <h1 style={{ ...styles.gradText, fontFamily: "Fredoka, sans-serif", fontSize: 46, margin: "0 0 2px", letterSpacing: -0.5 }}>ColaMatch</h1>
         <p style={{ color: C.muted, fontSize: 15, marginBottom: 30 }}>Hagamos match con una nueva experiencia 🐾</p>
         <button onClick={onEnter} className="cm-press" style={{ ...styles.cta, width: 220, margin: "0 auto" }}><PawPrint size={18} /> Entrar</button>
+        <div style={{ marginTop: 18, fontSize: 11, fontWeight: 700, color: C.purple, opacity: 0.7 }}>v7 · mapa destacados 🏆</div>
       </div>
     </div>
   );
